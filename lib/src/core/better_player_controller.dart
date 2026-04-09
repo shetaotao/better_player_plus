@@ -1013,6 +1013,15 @@ class BetterPlayerController {
         _postEvent(BetterPlayerEvent(BetterPlayerEventType.pipStart));
         return;
       }
+      if (Platform.isOhos) {
+        // HarmonyOS 不需要进入全屏，直接启用 PiP
+        _wasInFullScreenBeforePiP = _isFullScreen;
+        _wasControlsEnabledBeforePiP = _controlsEnabled;
+        setControlsEnabled(false);
+        await videoPlayerController?.enablePictureInPicture(left: 0, top: 0, width: 0, height: 0);
+        _postEvent(BetterPlayerEvent(BetterPlayerEventType.pipStart));
+        return;
+      }
       if (Platform.isIOS) {
         final RenderBox? renderBox = betterPlayerGlobalKey.currentContext!.findRenderObject() as RenderBox?;
         if (renderBox == null) {
@@ -1125,13 +1134,15 @@ class BetterPlayerController {
       throw StateError('The data source has not been initialized');
     }
 
-    if (audioTrack.language == null) {
+    // 允许没有 language 的音轨（如默认音轨）也能被选择
+    // 但 id 为 null 时表示没有可用音轨，直接返回
+    if (audioTrack.id == null && audioTrack.language == null) {
       _betterPlayerAsmsAudioTrack = null;
       return;
     }
 
     _betterPlayerAsmsAudioTrack = audioTrack;
-    videoPlayerController!.setAudioTrack(audioTrack.label, audioTrack.id);
+    videoPlayerController!.setAudioTrack(audioTrack.label, audioTrack.id ?? 0);
   }
 
   ///Enable or disable audio mixing with other sound within device.

@@ -13,6 +13,7 @@ class _DrmPageState extends State<DrmPage> {
   late BetterPlayerController _tokenController;
   late BetterPlayerController _widevineController;
   late BetterPlayerController _fairplayController;
+  late BetterPlayerController _harmonyOSController;
 
   @override
   void initState() {
@@ -56,6 +57,18 @@ class _DrmPageState extends State<DrmPage> {
     );
     _fairplayController.setupDataSource(fairplayDataSource);
 
+    // HarmonyOS WisePlay DRM 测试
+    _harmonyOSController = BetterPlayerController(betterPlayerConfiguration);
+    final BetterPlayerDataSource harmonyOSDataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", 
+      drmConfiguration: BetterPlayerDrmConfiguration(
+        drmType: BetterPlayerDrmType.wiseplay,  // 使用 WisePlay DRM
+        licenseUrl: "https://drmkit.hwcloudtest.cn:8080/license",
+      ),
+    );
+    _harmonyOSController.setupDataSource(harmonyOSDataSource);
+
     super.initState();
   }
 
@@ -91,6 +104,18 @@ class _DrmPageState extends State<DrmPage> {
           AspectRatio(
             aspectRatio: 16 / 9,
             child: BetterPlayer(controller: _fairplayController),
+          ),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'HarmonyOS - WisePlay DRM (Huawei proprietary). Works only for HarmonyOS.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: BetterPlayer(controller: _harmonyOSController),
           ),
           const SizedBox(height: 100),
         ],

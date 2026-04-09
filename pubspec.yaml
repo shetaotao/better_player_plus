@@ -5,28 +5,34 @@ documentation: https://github.com/SunnatilloShavkatov/betterplayer.git
 description: "Advanced video player based on video_player and Chewie. It's solves many typical use cases and it's easy to run."
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
-  flutter: ">=3.35.0"
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: '>=3.3.0'
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  collection: ^1.19.1
-  wakelock_plus: ^1.4.0
-  path_provider: ^2.1.5
+  collection: '>=1.19.0 <=2.0.0'
+  wakelock_plus: '>=1.2.0 <=1.5.2'
+  # path_provider: ^2.1.5
+  path_provider: 
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/path_provider/path_provider"
   visibility_detector: ^0.4.0+2
-  flutter_widget_from_html_core: ^0.17.0
+  flutter_widget_from_html_core: '>=0.16.0 <=0.17.2'
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  analysis_lints: ^1.0.5
+  analysis_lints: 1.0.5
 
 flutter:
   plugin:
     platforms:
+      ohos:
+        pluginClass: BetterPlayerPlugin
       android:
         package: uz.shs.better_player_plus
         pluginClass: BetterPlayerPlugin

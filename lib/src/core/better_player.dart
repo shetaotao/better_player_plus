@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:better_player_plus/src/configuration/better_player_controller_event.dart';
+import 'package:better_player_plus/src/core/better_player_orientation_helper.dart';
 import 'package:better_player_plus/src/core/better_player_utils.dart';
 import 'package:better_player_plus/src/core/better_player_with_controls.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +97,7 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
         SystemUiMode.manual,
         overlays: _betterPlayerConfiguration.systemOverlaysAfterFullScreen,
       );
-      SystemChrome.setPreferredOrientations(_betterPlayerConfiguration.deviceOrientationsAfterFullScreen);
+      BetterPlayerOrientationHelper.setPreferredOrientations(_betterPlayerConfiguration.deviceOrientationsAfterFullScreen);
     }
 
     WidgetsBinding.instance.removeObserver(this);
@@ -134,7 +135,7 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
       controller.postEvent(BetterPlayerEvent(BetterPlayerEventType.openFullscreen));
       await _pushFullScreenWidget(context);
     } else if (_isFullScreen) {
-      Navigator.of(context, rootNavigator: true).pop();
+      Navigator.of(context, rootNavigator: _betterPlayerConfiguration.useRootNavigator).pop();
       _isFullScreen = false;
       controller.postEvent(BetterPlayerEvent(BetterPlayerEventType.hideFullscreen));
     }
@@ -184,42 +185,59 @@ class _BetterPlayerState extends State<BetterPlayer> with WidgetsBindingObserver
       pageBuilder: _fullScreenRoutePageBuilder,
     );
 
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    // OHOS 上部分 SystemChrome API 可能抛异常或阻塞；此处需要保证仍能 push 全屏路由。
+    // 使用 timeout 避免阻塞
+    try {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky)
+          .timeout(const Duration(milliseconds: 100), onTimeout: () {
+      });
+    } catch (e) {
+      print('SystemChrome setEnabledSystemUIMode error: $e');
+    }
 
-    if (_betterPlayerConfiguration.autoDetectFullscreenDeviceOrientation) {
-      final aspectRatio = widget.controller.videoPlayerController?.value.aspectRatio ?? 1.0;
-      List<DeviceOrientation> deviceOrientations;
-      if (aspectRatio < 1.0) {
-        deviceOrientations = [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown];
+    // 先设置屏幕方向，确保在鸿蒙上能够执行
+    try {
+      if (_betterPlayerConfiguration.autoDetectFullscreenDeviceOrientation) {
+        final aspectRatio = widget.controller.videoPlayerController?.value.aspectRatio ?? 1.0;
+        List<DeviceOrientation> deviceOrientations;
+        if (aspectRatio < 1.0) {
+          deviceOrientations = [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown];
+        } else {
+          deviceOrientations = [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight];
+        }
+        await BetterPlayerOrientationHelper.setPreferredOrientations(deviceOrientations);
       } else {
-        deviceOrientations = [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight];
+        await BetterPlayerOrientationHelper.setPreferredOrientations(
+          widget.controller.betterPlayerConfiguration.deviceOrientationsOnFullScreen,
+        );
       }
-      await SystemChrome.setPreferredOrientations(deviceOrientations);
-    } else {
-      await SystemChrome.setPreferredOrientations(
-        widget.controller.betterPlayerConfiguration.deviceOrientationsOnFullScreen,
-      );
-    }
+    } catch (_) {}
 
-    if (!_betterPlayerConfiguration.allowedScreenSleep) {
-      await WakelockPlus.enable();
-    }
+    try {
+      if (!_betterPlayerConfiguration.allowedScreenSleep) {
+        await WakelockPlus.enable();
+      }
+    } catch (_) {}
 
     if (context.mounted) {
-      await Navigator.of(context, rootNavigator: true).push(route);
+      await Navigator.of(context, rootNavigator: _betterPlayerConfiguration.useRootNavigator).push(route);
       _isFullScreen = false;
       widget.controller.backFromFullScreen();
     }
 
     // The wakelock plugins checks whether it needs to perform an action internally,
     // so we do not need to check Wakelock.isEnabled.
-    await WakelockPlus.disable();
+    try {
+      await WakelockPlus.disable();
+    } catch (_) {}
 
-    await SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: _betterPlayerConfiguration.systemOverlaysAfterFullScreen,
-    );
-    await SystemChrome.setPreferredOrientations(_betterPlayerConfiguration.deviceOrientationsAfterFullScreen);
+    try {
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: _betterPlayerConfiguration.systemOverlaysAfterFullScreen,
+      );
+      await BetterPlayerOrientationHelper.setPreferredOrientations(_betterPlayerConfiguration.deviceOrientationsAfterFullScreen);
+    } catch (_) {}
   }
 
   Widget _buildPlayer() => VisibilityDetector(

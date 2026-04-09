@@ -1,0 +1,11 @@
+{
+  "name": "better_player_plus",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@sj/mediacache": "^1.0.0"
+  }
+}

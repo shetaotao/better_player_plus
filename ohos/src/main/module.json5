@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "better_player_plus",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

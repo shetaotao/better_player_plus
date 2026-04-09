@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:better_player_plus/better_player_plus.dart';
@@ -6,6 +7,7 @@ import 'package:better_player_plus/src/core/better_player_utils.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 ///Base class for both material and cupertino controls
 abstract class BetterPlayerControlsState<T extends StatefulWidget> extends State<T> {
@@ -328,14 +330,73 @@ abstract class BetterPlayerControlsState<T extends StatefulWidget> extends State
     );
   }
 
-  void _showAudioTracksSelectionWidget() {
+
+  void _showAudioTracksSelectionWidget() async {
     //HLS / DASH
-    final List<BetterPlayerAsmsAudioTrack>? asmsTracks = betterPlayerController!.betterPlayerAsmsAudioTracks;
+    List<BetterPlayerAsmsAudioTrack>? asmsTracks = betterPlayerController!.betterPlayerAsmsAudioTracks;
     final List<Widget> children = [];
     final BetterPlayerAsmsAudioTrack? selectedAsmsAudioTrack = betterPlayerController!.betterPlayerAsmsAudioTrack;
-    if (asmsTracks != null) {
+
+    print('BetterPlayer: _showAudioTracksSelectionWidget called');
+    print('BetterPlayer: Platform.isOhos = ${Platform.isOhos}');
+    print('BetterPlayer: ASMS tracks from parser: ${asmsTracks?.length ?? 0}');
+
+    if (Platform.isOhos) {
+      // HarmonyOS 优先从原生端拉取音轨；拉取失败时降级为默认音轨。
+      try {
+        const MethodChannel _channel = MethodChannel('better_player_channel');
+        const Duration _timeout = Duration(seconds: 2);
+        final List<dynamic>? tracks = await _channel.invokeMethod(
+          'getAudioTracks',
+          <String, dynamic>{'textureId': betterPlayerController!.videoPlayerController!.textureId},
+        ).timeout(_timeout);
+
+        if (tracks != null && tracks.isNotEmpty) {
+          final List<BetterPlayerAsmsAudioTrack> parsedTracks = [];
+          for (final dynamic track in tracks) {
+            if (track is! Map) {
+              continue;
+            }
+            final dynamic indexRaw = track['index'];
+            final dynamic labelRaw = track['label'];
+            final dynamic languageRaw = track['language'];
+            if (indexRaw is! int || labelRaw is! String) {
+              continue;
+            }
+            parsedTracks.add(
+              BetterPlayerAsmsAudioTrack(
+                id: indexRaw,
+                label: labelRaw,
+                language: languageRaw is String ? languageRaw : '',
+              ),
+            );
+          }
+          if (parsedTracks.isNotEmpty) {
+            asmsTracks = parsedTracks;
+          }
+        }
+      } on MissingPluginException catch (e) {
+        print('BetterPlayer: getAudioTracks not implemented on native side: $e');
+      } on TimeoutException {
+        print('BetterPlayer: getAudioTracks timeout on HarmonyOS');
+      } catch (e) {
+        print('BetterPlayer: Error fetching tracks from native: $e');
+      }
+    }
+
+    if (asmsTracks != null && asmsTracks.isNotEmpty) {
+      final int? selectedTrackId = selectedAsmsAudioTrack?.id;
+      final String? selectedTrackLabel = selectedAsmsAudioTrack?.label;
       for (var index = 0; index < asmsTracks.length; index++) {
-        final bool isSelected = selectedAsmsAudioTrack != null && selectedAsmsAudioTrack == asmsTracks[index];
+        final BetterPlayerAsmsAudioTrack currentTrack = asmsTracks[index];
+        final bool isSelected = Platform.isOhos
+            ? (selectedAsmsAudioTrack != null
+                ? (selectedTrackId != null && currentTrack.id == selectedTrackId) ||
+                    (selectedTrackLabel != null &&
+                        selectedTrackLabel.isNotEmpty &&
+                        currentTrack.label == selectedTrackLabel)
+                : index == 0)
+            : (selectedAsmsAudioTrack != null && selectedAsmsAudioTrack == currentTrack);
         children.add(_buildAudioTrackRow(asmsTracks[index], isSelected));
       }
     }
@@ -382,7 +443,7 @@ abstract class BetterPlayerControlsState<T extends StatefulWidget> extends State
   );
 
   void _showModalBottomSheet(List<Widget> children) {
-    Platform.isAndroid ? _showMaterialBottomSheet(children) : _showCupertinoModalBottomSheet(children);
+    (Platform.isAndroid || Platform.isOhos) ? _showMaterialBottomSheet(children) : _showCupertinoModalBottomSheet(children);
   }
 
   void _showCupertinoModalBottomSheet(List<Widget> children) {

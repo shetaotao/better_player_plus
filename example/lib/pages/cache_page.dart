@@ -24,7 +24,7 @@ class _CachePageState extends State<CachePage> {
       Constants.phantomVideoUrl,
       cacheConfiguration: const BetterPlayerCacheConfiguration(
         useCache: true,
-        preCacheSize: 10 * 1024 * 1024,
+        preCacheSize: 10 * 1024 * 1024, 
 
         ///Android only option to use cached video between app sessions
         key: 'testCacheKey',

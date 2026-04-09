@@ -92,7 +92,7 @@ class _VideoListWidgetState extends State<VideoListWidget> {
               ElevatedButton(
                 child: const Text('Set max volume'),
                 onPressed: () {
-                  controller!.setVolume(100);
+                  controller!.setVolume(1);
                 },
               ),
             ],

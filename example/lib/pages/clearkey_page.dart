@@ -17,6 +17,7 @@ class _ClearKeyState extends State<ClearKeyPage> {
   late BetterPlayerController _clearKeyControllerBroken;
   late BetterPlayerController _clearKeyControllerNetwork;
   late BetterPlayerController _clearKeyControllerMemory;
+  late BetterPlayerController _harmonyOSClearKeyController;
 
   @override
   void initState() {
@@ -28,6 +29,7 @@ class _ClearKeyState extends State<ClearKeyPage> {
     _clearKeyControllerBroken = BetterPlayerController(betterPlayerConfiguration);
     _clearKeyControllerNetwork = BetterPlayerController(betterPlayerConfiguration);
     _clearKeyControllerMemory = BetterPlayerController(betterPlayerConfiguration);
+    _harmonyOSClearKeyController = BetterPlayerController(betterPlayerConfiguration);
 
     _setupDataSources();
 
@@ -91,6 +93,19 @@ class _ClearKeyState extends State<ClearKeyPage> {
     );
 
     _clearKeyControllerMemory.setupDataSource(clearKeyDataSourceMemory);
+
+    // 鸿蒙 ClearKey DRM 示例 - 使用 JSON 格式字符串
+    // 注意：鸿蒙需要直接提供 JSON 字符串
+    final harmonyOSClearKeyDataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      Constants.forBiggerBlazesUrl,
+      drmConfiguration: BetterPlayerDrmConfiguration(
+        drmType: BetterPlayerDrmType.clearKey,
+        // 鸿蒙使用标准 ClearKey JSON 格式
+        clearKey: '{"keys":[{"kty":"oct","k":"a4631a153a443df9eed0593043db7519","kid":"f3c5e0361e6654b28f8049c778b23946"},{"kty":"oct","k":"69eaa802a6763af979e8d1940fb88392","kid":"abba271e8bcf552bbd2e86a434a9a5d9"}]}',
+      ),
+    );
+    _harmonyOSClearKeyController.setupDataSource(harmonyOSClearKeyDataSource);
   }
 
   @override
@@ -134,6 +149,18 @@ class _ClearKeyState extends State<ClearKeyPage> {
           AspectRatio(
             aspectRatio: 16 / 9,
             child: BetterPlayer(controller: _clearKeyControllerMemory),
+          ),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'HarmonyOS ClearKey Protection with JSON format key. Works only for HarmonyOS.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: BetterPlayer(controller: _harmonyOSClearKeyController),
           ),
           const SizedBox(height: 100),
         ],

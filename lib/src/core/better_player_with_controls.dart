@@ -144,7 +144,7 @@ class _BetterPlayerWithControlsState extends State<BetterPlayerWithControls> {
     if (controlsConfiguration.showControls) {
       BetterPlayerTheme? playerTheme = controlsConfiguration.playerTheme;
       if (playerTheme == null) {
-        if (Platform.isAndroid) {
+        if (Platform.isAndroid || Platform.isOhos) {
           playerTheme = BetterPlayerTheme.material;
         } else {
           playerTheme = BetterPlayerTheme.cupertino;
