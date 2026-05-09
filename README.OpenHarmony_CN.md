@@ -28,15 +28,15 @@ flutter pub get
 
 | Flutter 版本 | TAG |
 |---|---|
-| 3.27 | 1.1.5-ohos-1.0.0 |
-| 3.35 | 1.1.5-ohos-1.0.0 |
+| 3.27.5-ohos-1.0.4 | 1.1.5-ohos-1.0.0 |
+| 3.35.8-ohos-0.0.2 | 1.1.5-ohos-1.0.0 |
 
 ## 约束与限制
 
 ### 兼容性
 
-- Flutter: 3.27.5-ohos-1.0.4, DevEco Studio: 6.1.0.830, SDK: 5.0.0(12), ROM: 6.0.0.130 SP25;
-- Flutter: 3.35.8-ohos-0.0.2, DevEco Studio: 6.1.0.830, SDK: 5.0.0(12), ROM: 6.0.0.130 SP25;
+- Flutter: 3.27.5-ohos-1.0.4, DevEco Studio: 6.1.0.830, SDK: 5.0.0(12), ROM: 6.1.0.117 SP6;
+- Flutter: 3.35.8-ohos-0.0.2, DevEco Studio: 6.1.0.830, SDK: 5.0.0(12), ROM: 6.1.0.117 SP6;
 
 ### 权限要求
 
@@ -162,7 +162,7 @@ final dataSource = BetterPlayerDataSource(
 | `pause()` | 方法 | `int textureId` | / | yes | 暂停播放 |
 | `seekTo()` | 方法 | `int textureId`<br>`int location`（跳转位置毫秒） | / | yes | 跳转到指定播放位置 |
 | `position()` | 方法 | `int textureId` | `int`（毫秒） | yes | 获取当前播放位置 |
-| `absolutePosition()` | 方法 | `int textureId` | `int` | yes | 获取绝对时间位置（如可用） |
+| `absolutePosition()` | 方法 | `int textureId` | `int` | yes | 获取绝对时间位置 |
 | `setSpeed()` | 方法 | `int textureId`<br>`double speed`（0.5/1.0/1.5/2.0） | / | yes | 设置播放速度 |
 | `setTrackParameters()` | 方法 | `int textureId`<br>`int width`（像素）<br>`int height`（像素）<br>`int bitrate`（bps） | / | yes | 设置轨道参数（分辨率/码率） |
 | `setAudioTrack()` | 方法 | `int textureId`<br>`String name`<br>`int index` | / | yes | 切换音轨 |

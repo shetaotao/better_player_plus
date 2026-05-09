@@ -35,8 +35,8 @@ flutter pub get
 
 ### Compatibility
 
-- Flutter: 3.27.5-ohos-1.0.4, DevEco Studio: 6.0.2.640, SDK: 5.0.0(12), ROM: 6.0.0.130 SP18;
-- Flutter: 3.35.8-ohos-0.0.2, DevEco Studio: 6.0.2.640, SDK: 5.0.0(12), ROM: 6.0.0.130 SP18;
+- Flutter: 3.27.5-ohos-1.0.4, DevEco Studio: 6.0.2.640, SDK: 5.0.0(12), ROM:6.1.0.117 SP6;
+- Flutter: 3.35.8-ohos-0.0.2, DevEco Studio: 6.0.2.640, SDK: 5.0.0(12), ROM:6.1.0.117 SP6;
 
 ### Permission Requirements
 
@@ -162,7 +162,7 @@ final dataSource = BetterPlayerDataSource(
 | `pause()` | method | `int textureId` | / | yes | Pause playback |
 | `seekTo()` | method | `int textureId`<br>`int location` (position in ms) | / | yes | Jump to specified playback position |
 | `position()` | method | `int textureId` | `int` (ms) | yes | Get current playback position |
-| `absolutePosition()` | method | `int textureId` | `int` | yes | Get absolute time position (if available) |
+| `absolutePosition()` | method | `int textureId` | `int` | yes | Get absolute time position |
 | `setSpeed()` | method | `int textureId`<br>`double speed` (0.5/1.0/1.5/2.0) | / | yes | Set playback speed |
 | `setTrackParameters()` | method | `int textureId`<br>`int width` (pixels)<br>`int height` (pixels)<br>`int bitrate` (bps) | / | yes | Set track parameters (resolution/bitrate) |
 | `setAudioTrack()` | method | `int textureId`<br>`String name`<br>`int index` | / | yes | Switch audio track |
